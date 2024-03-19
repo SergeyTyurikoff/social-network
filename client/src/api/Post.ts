@@ -1,4 +1,6 @@
-import { z } from 'zod'
+import {z} from 'zod'
+import {useEffect, useState} from "react";
+
 export const PostSchema = z.object({
     id: z.string(),
     text: z.string(),
@@ -11,30 +13,67 @@ export const PostList = z.array(PostSchema)
 
 export type PostList = z.infer<typeof PostList>
 
-/*
-export interface Post {
-    /!**
-     * Идентификатор поста
-     *!/
-    id: string;
-    text: string;
-    authorId: string;
-    createdAt: number;
+export const FetchPostListSchema = z.object({
+    list: PostList,
+})
+
+type FetchPostListResponse = z.infer<typeof FetchPostListSchema>
+
+export function fetchPostList(): Promise<FetchPostListResponse> {
+    return fetch("/api/posts")
+        .then(response => response.json()
+            .then(data => FetchPostListSchema.parse(data)))
 }
 
-export type PostList = Post[];
+interface IdleRequestState {
+    status: "idle";
+}
 
-function isPost(data: unknown): data is Post {
-    return (
-        typeof data === 'object' &&
-        data !== null &&
-        "id" in data &&
-        typeof data.id === "string" &&
-        "text" in data &&
-        typeof data.text === "string" &&
-        "authorId" in data &&
-        typeof data.authorId === "string" &&
-        "createdAt" in data &&
-        typeof data.createdAt === "number"
-    );
-}*/
+interface LoadingRequestState {
+    status: "pending";
+}
+
+interface SuccessRequestState {
+    status: "success";
+    data: PostList;
+}
+
+interface ErrorRequestState {
+    status: "error";
+    error: unknown;
+}
+
+type RequestState =
+    | IdleRequestState
+    | LoadingRequestState
+    | ErrorRequestState
+    | SuccessRequestState;
+
+export function usePostList() {
+    const [state, setState] = useState<RequestState>({ status: "idle" });
+
+    useEffect(() => {
+        if (state.status === "pending") {
+            fetchPostList()
+                .then(data => {
+                    setState({ status: "success", data: data.list });
+                })
+                .catch(error => {
+                    setState({ status: "error", error})
+                })
+        }
+    }, [state])
+
+    useEffect(() => {
+        setState({status: "pending"})
+    }, [])
+
+    const refetch = () => {
+        setState({status: "pending"})
+    }
+
+    return {
+        state,
+        refetch,
+    }
+}
