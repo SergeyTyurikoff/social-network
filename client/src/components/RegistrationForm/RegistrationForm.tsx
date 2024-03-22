@@ -1,18 +1,20 @@
-import { FC, FormEventHandler, useState } from 'react';
+import {FC, FormEventHandler, useState} from 'react';
 
 import { FormField } from '../FormField';
 import { Button } from '../Button';
 import './RegistrationForm.css';
 import {useMutation} from "@tanstack/react-query";
-import {registerUser} from "../../api/User.ts";
+import {registerUser, registerUserSchema} from "../../api/User.ts";
 import {queryClient} from "../../api/queryClient.ts";
 
 export const RegistrationForm: FC = () => {
+  const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const registerMutation = useMutation({
-      mutationFn: () => registerUser(username, password),
+      mutationFn: () => registerUser(registerUserSchema.parse({email, username, password})),
+      onError: (data) => console.log(JSON.parse(data.message))
   }, queryClient)
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
@@ -23,6 +25,14 @@ export const RegistrationForm: FC = () => {
 
   return (
     <form className="registration-form" onSubmit={handleSubmit}>
+      <FormField label="Почта">
+        <input
+            type="text"
+            name="email"
+            onChange={(event) => setEmail(event.target.value)}
+            value={email}
+        />
+      </FormField>
       <FormField label="Имя пользователя">
         <input
           type="text"
@@ -41,7 +51,9 @@ export const RegistrationForm: FC = () => {
         />
       </FormField>
 
-        {registerMutation.error && <span>{registerMutation.error.message}</span>}
+      {/*{registerMutation.error && registerMutation.error.message.map((item) => <li>{item.message}</li>)}*/}
+{/*        {registerMutation.error && JSON.parse(registerMutation.error.message).map(({item.message}) => <li>{item.message}</li>)}*/}
+      {registerMutation.error && registerMutation.error.message}
 
       <Button
           type="submit"

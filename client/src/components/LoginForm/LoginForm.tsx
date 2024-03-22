@@ -4,7 +4,7 @@ import {useMutation} from "@tanstack/react-query";
 import {FormField} from '../FormField';
 import {Button} from '../Button';
 import './LoginForm.css';
-import {login} from "../../api/User.ts";
+import {login, loginSchema} from "../../api/User.ts";
 import {queryClient} from "../../api/queryClient.ts";
 
 export const LoginForm: FC = () => {
@@ -12,7 +12,7 @@ export const LoginForm: FC = () => {
     const [password, setPassword] = useState('');
 
     const loginMutation = useMutation({
-        mutationFn: () => login(username, password),
+        mutationFn: () => login(loginSchema.parse({username, password})),
         onSuccess() {
           queryClient.invalidateQueries({queryKey: ["users", "me"]});
         },
