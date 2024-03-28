@@ -3,7 +3,6 @@ import {useMutation} from "@tanstack/react-query";
 import { z } from 'zod';
 import { useForm } from 'react-hook-form'
 import {zodResolver} from '@hookform/resolvers/zod'
-
 import { Button } from '../Button';
 import { FormField } from '../FormField';
 import './PostForm.css';
@@ -41,14 +40,14 @@ export const PostForm: FC<IPostFormProps> = () => {
     <form className="post-form" onSubmit={handleSubmit(({ text }) => {
         createPostMutation.mutate(text)
     })}>
-      <FormField label="Текст поста" errorMessage={errors.text?.message}>
+      <FormField label="Текст заметки" errorMessage={errors.text?.message}>
         <textarea
             className="post-form__input"
             {...register("text")}
         />
       </FormField>
 
-      <Button type="submit" title="Опубликовать" isLoading={createPostMutation.isPending}/>
+      <Button type="submit" title="Создать" isLoading={createPostMutation.isPending}/>
     </form>
   );
 };

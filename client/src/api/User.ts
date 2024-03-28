@@ -20,6 +20,10 @@ export const registerUserSchema = z.object({
 })
 export type RegisterUser = z.infer<typeof registerUserSchema>
 
+export interface IErrorItem {
+    [k: string]: string | number | boolean | string[];
+}
+
 export function fetchUser(id: string): Promise<User> {
     return fetch(`/api/users/${id}`)
         .then(resp => resp.json())
@@ -49,7 +53,9 @@ export function login(data: Login): Promise<void> {
 }
 
 export function logout(): Promise<void> {
-    return fetch('/api/logout/')
+    return fetch("/api/logout", {
+        method: "POST",
+    })
         .then(validateResponse)
         .then(() => undefined)
 }
